@@ -2,63 +2,213 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>سجل توثيق الإساءات</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f4c5c">
+<title>سجل التوثيق</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f4f5f7;--card:#fff;--tx:#1b1f24;--mu:#6b7280;--bd:#e2e5ea;--pr:#1d5fd1;--prt:#fff;--dg:#c62828;--ok:#1b7f3b}
-@media(prefers-color-scheme:dark){:root{--bg:#14171c;--card:#1d2128;--tx:#eceff3;--mu:#98a1ae;--bd:#2c323b;--pr:#5b93f0;--prt:#0b1220;--dg:#ef6f6f;--ok:#5fcf86}}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font-family:Tahoma,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.6}
-.wrap{max-width:720px;margin:0 auto;padding:14px}
-h1{font-size:20px;margin:6px 0 12px}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
-.btn{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:10px 16px;border-radius:10px;cursor:pointer}
-.btn.p{background:var(--pr);color:var(--prt);border-color:var(--pr)}
-.btn.d{color:var(--dg);border-color:var(--dg)}
-.btn:disabled{opacity:.5}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row.sp{justify-content:space-between}
-input,textarea{width:100%;font:inherit;padding:12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
-textarea{min-height:110px;resize:vertical}
-label{display:block;margin:12px 0 4px;font-weight:600}
-.mu{color:var(--mu);font-size:14px}
-.bar{height:6px;background:var(--bd);border-radius:6px;overflow:hidden;margin:8px 0 14px}.bar i{display:block;height:100%;background:var(--pr)}
-.q{font-size:18px;font-weight:700;margin:0 0 4px}
-.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{padding:10px 16px;border:1px solid var(--bd);border-radius:999px;cursor:pointer;background:var(--bg)}
-.chip.on{background:var(--pr);color:var(--prt);border-color:var(--pr)}
-.imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:10px}
-.imgs div{position:relative}
-.imgs img{width:100%;height:96px;object-fit:cover;border-radius:10px;border:1px solid var(--bd);cursor:pointer}
-.imgs button{position:absolute;top:4px;left:4px;border:0;background:rgba(0,0,0,.65);color:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer}
-.tag{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px}
-.kv{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;margin:8px 0}.kv b{color:var(--mu);font-weight:600}
-.item{cursor:pointer}
-.big{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:9}.big img{max-width:96%;max-height:92%}
-.err{color:var(--dg);font-size:14px;min-height:20px}.ok{color:var(--ok)}
+:root{
+  --ink:#0f1720; --mut:#5b6672; --line:#dde2e8; --paper:#f1f3f5; --surf:#ffffff;
+  --brand:#0f4c5c; --brand-ink:#ffffff; --brand-soft:#e3eef1;
+  --danger:#b42318; --danger-soft:#fdecea; --ok:#14804a; --ok-soft:#e4f4ea;
+  --t1:#2f5d8a; --t1s:#e6eef6; --t2:#a15c07; --t2s:#fbefd9; --t3:#55606b; --t3s:#e9ecef;
+  --bar-h:84px;
+}
+@media(prefers-color-scheme:dark){:root{
+  --ink:#eef2f5; --mut:#9aa6b2; --line:#2a333c; --paper:#0e1317; --surf:#161d23;
+  --brand:#5fb3c7; --brand-ink:#06232b; --brand-soft:#17323a;
+  --danger:#f0786b; --danger-soft:#3a1e1b; --ok:#5fcf8f; --ok-soft:#173326;
+  --t1:#8db8e6; --t1s:#1b2a3a; --t2:#e7b15e; --t2s:#372a14; --t3:#aab4be; --t3s:#242c33;
+}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:70px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans Arabic","Segoe UI",Tahoma,Arial,sans-serif;font-size:16px;line-height:1.65;-webkit-text-size-adjust:100%}
+body.hasbar main{padding-bottom:calc(var(--bar-h) + env(safe-area-inset-bottom,0px) + 16px)}
+button,input,textarea{font:inherit;color:inherit}
+svg{width:1.25em;height:1.25em;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:5;background:var(--surf);border-bottom:1px solid var(--line);padding:env(safe-area-inset-top,0px) 16px 0}
+.top>div{max-width:640px;margin:0 auto;height:58px;display:flex;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:var(--brand)}
+.brand svg{width:26px;height:26px}
+.tbtn{display:flex;align-items:center;gap:6px;border:0;background:none;color:var(--mut);padding:10px 4px;font-size:15px;font-weight:500;cursor:pointer;min-height:44px}
+.tbtn:hover{color:var(--ink)}
+
+main{max-width:640px;margin:0 auto;padding:20px 16px}
+h1{font-size:26px;line-height:1.35;margin:4px 0 8px;font-weight:700}
+h2{font-size:20px;margin:0 0 4px;font-weight:700}
+.lead{color:var(--mut);margin:0 0 20px}
+.mut{color:var(--mut);font-size:14px}
+
+/* stepper */
+.prog{display:flex;gap:6px;margin:2px 0 8px}
+.prog i{flex:1;height:5px;border-radius:5px;background:var(--line)}
+.prog i.on{background:var(--brand)}
+.stepline{display:flex;justify-content:space-between;color:var(--mut);font-size:14px;margin-bottom:18px}
+.stepline b{color:var(--ink);font-weight:600}
+
+/* form */
+.fld{margin-bottom:18px}
+.fld label{display:block;font-weight:600;margin-bottom:6px;font-size:15px}
+.fld label small{color:var(--mut);font-weight:400}
+.in{width:100%;min-height:54px;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surf);outline:none;transition:border-color .15s,box-shadow .15s}
+textarea.in{min-height:120px;resize:vertical}
+.in:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.in.bad{border-color:var(--danger)}
+.help{color:var(--danger);font-size:14px;margin-top:6px;min-height:0}
+.ltr{direction:ltr;text-align:right}
+
+.opts{display:grid;gap:10px;margin-bottom:18px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:right;padding:14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surf);cursor:pointer}
+.opt .dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;flex:none}
+.opt.on{border-color:var(--brand);background:var(--brand-soft)}
+.opt.on .dot{border-color:var(--brand);background:var(--brand);color:var(--brand-ink)}
+.opt .dot svg{width:14px;height:14px;stroke-width:3;opacity:0}
+.opt.on .dot svg{opacity:1}
+.opt b{display:block;font-weight:600}
+.opt span{color:var(--mut);font-size:14px}
+
+.drop{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:26px 16px;border:2px dashed var(--line);border-radius:14px;background:var(--surf);cursor:pointer;color:var(--mut)}
+.drop svg{width:34px;height:34px;color:var(--brand)}
+.drop b{color:var(--ink);font-weight:600}
+.drop input{display:none}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.grid .im{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;background:var(--line)}
+.grid img{width:100%;height:100%;object-fit:cover;display:block;cursor:pointer}
+.grid .x{position:absolute;top:6px;left:6px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(0,0,0,.65);color:#fff;display:grid;place-items:center;cursor:pointer}
+.grid .x svg{width:16px;height:16px}
+
+/* buttons + bar */
+.bar{position:fixed;inset:auto 0 0 0;z-index:6;background:var(--surf);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.bar>div{max-width:640px;margin:0 auto;display:flex;gap:10px}
+.btn{flex:1;min-height:54px;border-radius:14px;border:1.5px solid var(--line);background:var(--surf);font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:transform .08s}
+.btn:active{transform:scale(.98)}
+.btn.p{flex:2;background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.d{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.o{color:var(--danger);border-color:var(--danger)}
+.btn:disabled{opacity:.55;cursor:default}
+.btn:focus-visible,.tbtn:focus-visible,.opt:focus-visible,.row:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.spin{width:18px;height:18px;border:2.5px solid currentColor;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+.alert{margin:0 0 14px;padding:12px 14px;border-radius:12px;background:var(--danger-soft);color:var(--danger);font-size:15px}
+.note{margin:0 0 14px;padding:12px 14px;border-radius:12px;background:var(--brand-soft);color:var(--brand);font-size:15px}
+
+/* home */
+.steps{list-style:none;margin:0 0 8px;padding:0;border-top:1px solid var(--line)}
+.steps li{display:flex;gap:14px;align-items:center;padding:14px 2px;border-bottom:1px solid var(--line)}
+.steps .n{width:30px;height:30px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+.steps span{color:var(--mut);font-size:14px;display:block}
+
+/* review / detail */
+.kv{margin:0;border-top:1px solid var(--line)}
+.kv div{display:grid;grid-template-columns:104px 1fr;gap:12px;padding:13px 2px;border-bottom:1px solid var(--line)}
+.kv dt{color:var(--mut);font-size:15px}
+.kv dd{margin:0;word-break:break-word}
+.kv a{color:var(--brand);font-weight:500}
+
+/* list */
+.sbar{position:sticky;top:calc(59px + env(safe-area-inset-top,0px));z-index:4;background:var(--paper);padding:10px 0;display:flex;gap:8px}
+.sbox{position:relative;flex:1}
+.sbox svg{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--mut)}
+.sbox .in{padding-right:44px}
+.sq{width:54px;flex:none;border-radius:12px;border:1.5px solid var(--line);background:var(--surf);display:grid;place-items:center;cursor:pointer}
+.cnt{color:var(--mut);font-size:14px;margin:6px 2px 8px}
+.rows{background:var(--surf);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;width:100%;text-align:right;border:0;border-bottom:1px solid var(--line);background:none;padding:14px;cursor:pointer;min-height:68px}
+.row:last-child{border-bottom:0}
+.row:active{background:var(--paper)}
+.av{width:44px;height:44px;border-radius:50%;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;font-weight:700;font-size:18px;flex:none}
+.rb{flex:1;min-width:0}
+.rb b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rb span{color:var(--mut);font-size:14px}
+.rm{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none}
+.chev{color:var(--mut);transform:scaleX(-1)}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:13px;font-weight:600}
+.t1{background:var(--t1s);color:var(--t1)}.t2{background:var(--t2s);color:var(--t2)}.t3{background:var(--t3s);color:var(--t3)}
+.empty{text-align:center;padding:48px 20px;color:var(--mut)}
+
+.back{display:inline-flex;align-items:center;gap:6px;border:0;background:none;color:var(--brand);font-weight:600;padding:6px 0 14px;min-height:44px;cursor:pointer}
+.dh{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.dh .av{width:56px;height:56px;font-size:22px}
+.dh h1{margin:0;font-size:22px}
+
+/* done */
+.ok-wrap{text-align:center;padding:40px 8px}
+.okc{width:84px;height:84px;margin:0 auto 18px;border-radius:50%;background:var(--ok-soft);color:var(--ok);display:grid;place-items:center;animation:pop .35s ease-out}
+.okc svg{width:42px;height:42px;stroke-width:2.6}
+@keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center}
+.lb img{max-width:100%;max-height:82%;object-fit:contain}
+.lb button{position:absolute;border:0;background:rgba(255,255,255,.16);color:#fff;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;cursor:pointer}
+.lb .c{top:calc(14px + env(safe-area-inset-top,0px));left:14px}
+.lb .pv{right:12px;top:50%}.lb .nx{left:12px;top:50%}
+.lb .ct{position:absolute;bottom:calc(18px + env(safe-area-inset-bottom,0px));color:#fff;font-size:14px}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* print */
 #pa{display:none}
-@media print{.wrap,.big{display:none!important}#pa{display:block;color:#000;background:#fff}.rec{page-break-inside:avoid;border:1px solid #999;border-radius:8px;padding:10px;margin-bottom:14px}.rec h2{margin:0 0 6px;font-size:18px}.pi{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.pi img{max-height:220px;max-width:46%;border:1px solid #999}.kv b{color:#333}}
+@media print{
+  .top,main,.bar,.lb{display:none!important}
+  body{background:#fff}
+  #pa{display:block;color:#000;background:#fff;font-family:Tahoma,Arial,sans-serif}
+  .rec{page-break-inside:avoid;border:1px solid #888;border-radius:8px;padding:12px;margin-bottom:14px}
+  .rec h2{margin:0 0 8px;font-size:18px}
+  .rec .kv div{grid-template-columns:110px 1fr;padding:5px 0}
+  .rec .kv dt{color:#333}
+  .pi{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .pi img{max-height:230px;max-width:48%;border:1px solid #888}
+}
 </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
+<header class="top"><div>
+  <div class="brand"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg><span>سجل التوثيق</span></div>
+  <button class="tbtn" id="topAct" onclick="topAction()"></button>
+</div></header>
+<main id="app"></main>
+<footer class="bar" id="bar"><div id="barIn"></div></footer>
 <div id="pa"></div>
+
 <script>
-// ضع هنا رابط تطبيق الويب من Google Apps Script
+// رابط تطبيق الويب من Google Apps Script
 const API = 'https://script.google.com/macros/s/AKfycbzzIVWyHITVEwYAQBqeApZQ8WgtEjebuxR87ldWJ9RIyvIj7YyWJh_Lv6WP23hdJnw-/exec';
 
-const TYPES = ['تعليق', 'إساءة لفظية', 'أمور أخرى'];
-const PAGES = [
-  { t: 'البيانات الأساسية', f: [{ k: 'name', l: 'الاسم', req: 1 }, { k: 'phone', l: 'رقم الهاتف (إن وجد)', tp: 'tel' }] },
-  { t: 'العنوان والصفحة', f: [{ k: 'address', l: 'العنوان (إن وجد)' }, { k: 'link', l: 'رابط صفحة فيسبوك / تيكتوك / انستا', tp: 'url', ph: 'https://' }] },
-  { t: 'نوع الإساءة والملاحظات', type: 1, f: [{ k: 'notes', l: 'الملاحظات (إن وجدت)', ta: 1 }] },
-  { t: 'إرفاق الصور (يمكن أكثر من صورة)', img: 1, f: [] }
+const TYPES = [
+  { v: 'تعليق', d: 'تعليق مسيء على منشور أو صفحة' },
+  { v: 'إساءة لفظية', d: 'شتائم أو ألفاظ مسيئة' },
+  { v: 'أمور أخرى', d: 'اكتب النوع بنفسك' }
 ];
-const S = { view: 'home', step: 0, d: null, err: '', busy: 0, sending: 0, pin: '', rows: [], sel: null, q: '', del: 0, big: '' };
+const STEPS = ['البيانات الأساسية', 'العنوان والصفحة', 'نوع الإساءة والملاحظات', 'الصور'];
+const S = { view: 'home', step: 0, d: null, bad: {}, err: '', busy: 0, sending: 0, pin: '', rows: [], sel: null, q: '', del: 0, lb: null, loading: 0 };
+
+const I = {
+  lock: '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>',
+  out: '<svg viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3M10 16l-4-4 4-4M6 12h10"/></svg>',
+  cam: '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  chk: '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>',
+  chev: '<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
+  ref: '<svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 11-2.4-5.7M20 4v5h-5"/></svg>',
+  plus: '<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  print: '<svg viewBox="0 0 24 24"><path d="M7 9V4h10v5M7 17H5a1 1 0 01-1-1v-5a2 2 0 012-2h12a2 2 0 012 2v5a1 1 0 01-1 1h-2"/><rect x="7" y="14" width="10" height="6"/></svg>',
+  trash: '<svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+};
 
 const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = id => document.getElementById(id);
 const blank = () => ({ name: '', phone: '', address: '', type: '', typeOther: '', link: '', images: [], notes: '' });
 const typeText = d => d.type === 'أمور أخرى' && d.typeOther ? 'أمور أخرى: ' + d.typeOther : d.type;
+const tcls = t => t === 'تعليق' ? 't1' : t === 'إساءة لفظية' ? 't2' : 't3';
 const thumb = id => 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1000';
+const initial = n => (String(n || '?').trim()[0] || '?');
 const linkHtml = u => { if (!u) return '—'; try { const x = new URL(u); if (/^https?:$/.test(x.protocol)) return `<a href="${E(x.href)}" target="_blank" rel="noopener" dir="ltr">${E(u)}</a>`; } catch (e) {} return E(u); };
 
 async function call(o) {
@@ -66,54 +216,92 @@ async function call(o) {
   return r.json();
 }
 
+/* ---------- render ---------- */
 function R() {
-  const a = document.getElementById('app');
-  a.innerHTML = ({ home, wizard: wiz, done, login, list, detail })[S.view]();
-  document.querySelectorAll('.big').forEach(x => x.remove());
-  if (S.big) { const o = document.createElement('div'); o.className = 'big'; o.onclick = () => { S.big = ''; o.remove(); }; const i = document.createElement('img'); i.src = S.big; o.appendChild(i); document.body.appendChild(o); }
+  const v = VIEWS[S.view]();
+  $('app').innerHTML = v.main;
+  $('barIn').innerHTML = v.bar || '';
+  $('bar').style.display = v.bar ? '' : 'none';
+  document.body.classList.toggle('hasbar', !!v.bar);
+  const t = $('topAct');
+  if (S.pin) { t.innerHTML = I.out + 'خروج'; t.style.display = ''; }
+  else if (S.view === 'home' || S.view === 'done') { t.innerHTML = I.lock + 'المسؤول'; t.style.display = ''; }
+  else t.style.display = 'none';
+  document.querySelectorAll('.lb').forEach(x => x.remove());
+  if (S.lb) {
+    const L = S.lb, o = document.createElement('div'); o.className = 'lb';
+    o.innerHTML = `<img src="${E(L.list[L.i])}"><button class="c" onclick="lb(0)" aria-label="إغلاق">${I.x}</button>`
+      + (L.list.length > 1 ? `<button class="pv" onclick="lb(-1)" aria-label="السابق">${I.chev}</button><button class="nx" onclick="lb(1)" aria-label="التالي">${I.chev.replace('<svg', '<svg style="transform:scaleX(-1)"')}</button><div class="ct">${L.i + 1} / ${L.list.length}</div>` : '');
+    document.body.appendChild(o);
+  }
 }
-const go = v => { S.view = v; S.err = ''; S.del = 0; R(); scrollTo(0, 0); };
+const go = v => { S.view = v; S.err = ''; S.del = 0; S.lb = null; R(); scrollTo(0, 0); };
+function lb(d) { if (d === 0) S.lb = null; else S.lb.i = (S.lb.i + d + S.lb.list.length) % S.lb.list.length; R(); }
+function topAction() { if (S.pin) { S.pin = ''; S.rows = []; S.q = ''; go('home'); } else go('login'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.lb) lb(0); });
 
-/* ===== الواجهة العامة: إدخال ===== */
+const btn = (txt, fn, cls = '', dis = false, ico = '') => `<button class="btn ${cls}" onclick="${fn}" ${dis ? 'disabled' : ''}>${ico}${txt}</button>`;
+const alertBox = () => S.err ? `<div class="alert" role="alert">${E(S.err)}</div>` : '';
+
+const VIEWS = { home, wizard, review, done, login, list, detail };
+
+/* ---------- الإدخال ---------- */
 function home() {
-  return `<h1>سجل توثيق الإساءات</h1><div class="card"><p>سجّل البيانات خطوة بعد خطوة.</p>
-  <button class="btn p" onclick="newRec()">+ إضافة شخص</button></div>
-  <div class="row"><button class="btn" onclick="go('login')">دخول المسؤول</button></div>`;
+  return {
+    main: `<h1>توثيق إساءة جديدة</h1><p class="lead">سجّل بيانات الشخص على أربع خطوات قصيرة. تقدر ترجع للخطوة السابقة بأي وقت.</p>
+    <ol class="steps">${STEPS.map((s, i) => `<li><div class="n">${i + 1}</div><div><b>${s}</b></div></li>`).join('')}</ol>`,
+    bar: btn('بدء تسجيل جديد', 'newRec()', 'p', false, I.plus)
+  };
 }
-function newRec() { S.d = blank(); S.step = 0; go('wizard'); }
+function newRec() { S.d = blank(); S.step = 0; S.bad = {}; go('wizard'); }
 
-function wiz() {
-  const n = PAGES.length, d = S.d;
-  if (S.step >= n) return `<h1>مراجعة وإرسال</h1><div class="card">${sum(d)}<div class="err">${E(S.err)}</div>
-    <div class="row sp"><button class="btn" onclick="S.step--;S.err='';R()" ${S.sending ? 'disabled' : ''}>السابق</button>
-    <button class="btn p" onclick="send()" ${S.sending ? 'disabled' : ''}>${S.sending ? 'جاري الإرسال…' : 'حفظ'}</button></div></div>`;
-  const p = PAGES[S.step]; let b = '';
-  p.f.forEach(f => {
-    b += `<label>${f.l}${f.req ? ' *' : ''}</label>` + (f.ta
-      ? `<textarea oninput="S.d.${f.k}=this.value">${E(d[f.k])}</textarea>`
-      : `<input type="${f.tp || 'text'}" placeholder="${E(f.ph || '')}" value="${E(d[f.k])}" oninput="S.d.${f.k}=this.value">`);
-  });
-  if (p.type) {
-    b = `<label>نوع الإساءة *</label><div class="chips">${TYPES.map(t => `<span class="chip${d.type === t ? ' on' : ''}" onclick="S.d.type='${t}';R()">${t}</span>`).join('')}</div>`
-      + (d.type === 'أمور أخرى' ? `<input style="margin-top:10px" placeholder="اكتب نوع الإساءة" value="${E(d.typeOther)}" oninput="S.d.typeOther=this.value">` : '') + b;
-  }
-  if (p.img) {
-    b = `<input type="file" accept="image/*" multiple onchange="upl(this)"><div class="imgs">${d.images.map((m, i) => `<div><img src="${m}" onclick="S.big=S.d.images[${i}];R()"><button onclick="S.d.images.splice(${i},1);R()">×</button></div>`).join('')}</div>${S.busy ? '<div class="mu">جاري تجهيز الصور…</div>' : ''}`;
-  }
-  return `<h1>سجل جديد</h1><div class="card"><div class="mu">الخطوة ${S.step + 1} من ${n}</div><div class="bar"><i style="width:${(S.step + 1) / n * 100}%"></i></div>
-  <p class="q">${p.t}</p>${b}<div class="err">${E(S.err)}</div>
-  <div class="row sp" style="margin-top:14px"><button class="btn" onclick="${S.step ? "S.step--;S.err='';R()" : "go('home')"}">${S.step ? 'السابق' : 'إلغاء'}</button><button class="btn p" onclick="nx()">التالي</button></div></div>`;
+function field(k, label, o = {}) {
+  const v = E(S.d[k]), bad = S.bad[k];
+  const ctl = o.ta
+    ? `<textarea class="in${bad ? ' bad' : ''}" id="f_${k}" oninput="S.d.${k}=this.value">${v}</textarea>`
+    : `<input class="in${o.ltr ? ' ltr' : ''}${bad ? ' bad' : ''}" id="f_${k}" type="${o.tp || 'text'}" ${o.im ? `inputmode="${o.im}"` : ''} placeholder="${E(o.ph || '')}" value="${v}" autocomplete="off" oninput="S.d.${k}=this.value;this.classList.remove('bad')">`;
+  return `<div class="fld"><label for="f_${k}">${label}${o.opt ? ' <small>(اختياري)</small>' : ''}</label>${ctl}${bad ? `<div class="help">${bad}</div>` : ''}</div>`;
 }
-function sum(d) {
-  const n = d.images ? d.images.length : 0;
-  return `<div class="kv"><b>الاسم</b><span>${E(d.name)}</span><b>الهاتف</b><span>${E(d.phone || '—')}</span><b>العنوان</b><span>${E(d.address || '—')}</span><b>نوع الإساءة</b><span>${E(typeText(d))}</span><b>الرابط</b><span>${linkHtml(d.link)}</span><b>الصور</b><span>${n}</span><b>ملاحظات</b><span>${E(d.notes || '—')}</span></div>`;
+function wizard() {
+  const d = S.d, n = STEPS.length; let b = '';
+  if (S.step === 0) b = field('name', 'الاسم') + field('phone', 'رقم الهاتف', { opt: 1, tp: 'tel', im: 'tel', ltr: 1, ph: '07xxxxxxxxx' });
+  if (S.step === 1) b = field('address', 'العنوان', { opt: 1 }) + field('link', 'رابط صفحة فيسبوك أو تيكتوك أو انستا', { opt: 1, tp: 'url', im: 'url', ltr: 1, ph: 'https://' });
+  if (S.step === 2) {
+    b = `<div class="fld"><label>نوع الإساءة</label></div><div class="opts" role="radiogroup">${TYPES.map(t => `<button type="button" role="radio" aria-checked="${d.type === t.v}" class="opt${d.type === t.v ? ' on' : ''}" onclick="pick('${t.v}')"><div class="dot">${I.chk}</div><div><b>${t.v}</b><span>${t.d}</span></div></button>`).join('')}</div>`
+      + (S.bad.type ? `<div class="help" style="margin:-8px 0 14px">${S.bad.type}</div>` : '')
+      + (d.type === 'أمور أخرى' ? field('typeOther', 'اكتب نوع الإساءة', { ph: 'مثال: تهديد' }) : '')
+      + field('notes', 'ملاحظات', { opt: 1, ta: 1 });
+  }
+  if (S.step === 3) {
+    b = `<label class="drop"><input type="file" accept="image/*" multiple onchange="upl(this)">${I.cam}<b>اضغط لإضافة صور</b><span class="mut">من المعرض أو الكاميرا، حتى 10 صور</span></label>`
+      + (d.images.length || S.busy ? `<div class="grid">${d.images.map((m, i) => `<div class="im"><img src="${m}" alt="صورة ${i + 1}" onclick="S.lb={list:S.d.images,i:${i}};R()"><button class="x" onclick="S.d.images.splice(${i},1);R()" aria-label="حذف الصورة">${I.x}</button></div>`).join('')}${S.busy ? '<div class="im" style="display:grid;place-items:center"><div class="spin"></div></div>' : ''}</div>` : '');
+  }
+  return {
+    main: `<div class="prog">${STEPS.map((_, i) => `<i class="${i <= S.step ? 'on' : ''}"></i>`).join('')}</div>
+      <div class="stepline"><b>${STEPS[S.step]}</b><span>${S.step + 1} من ${n}</span></div>${alertBox()}${b}`,
+    bar: btn(S.step ? 'السابق' : 'إلغاء', S.step ? 'back_()' : "go('home')") + btn('التالي', 'nx()', 'p', S.busy > 0)
+  };
 }
+function pick(v) { S.d.type = v; delete S.bad.type; R(); }
+function back_() { S.err = ''; S.step--; R(); scrollTo(0, 0); }
 function nx() {
+  const d = S.d; S.bad = {}; S.err = '';
+  if (S.step === 0 && !d.name.trim()) S.bad.name = 'اكتب اسم الشخص';
+  if (S.step === 2) { if (!d.type) S.bad.type = 'اختر نوع الإساءة'; else if (d.type === 'أمور أخرى' && !d.typeOther.trim()) S.bad.typeOther = 'اكتب نوع الإساءة'; }
+  if (Object.keys(S.bad).length) { R(); return; }
+  if (S.step === STEPS.length - 1) { S.view = 'review'; } else S.step++;
+  R(); scrollTo(0, 0);
+}
+function review() {
   const d = S.d;
-  if (S.step === 0 && !d.name.trim()) { S.err = 'الاسم مطلوب'; return R(); }
-  if (S.step === 2 && !d.type) { S.err = 'اختر نوع الإساءة'; return R(); }
-  if (S.busy) { S.err = 'انتظر انتهاء تجهيز الصور'; return R(); }
-  S.err = ''; S.step++; R(); scrollTo(0, 0);
+  return {
+    main: `<h2>راجع البيانات</h2><p class="lead">تأكد من المعلومات قبل الحفظ.</p>${alertBox()}${kv(d, d.images.length)}
+      ${d.images.length ? `<div class="grid">${d.images.map((m, i) => `<div class="im"><img src="${m}" alt="" onclick="S.lb={list:S.d.images,i:${i}};R()"></div>`).join('')}</div>` : ''}`,
+    bar: btn('تعديل', "S.view='wizard';S.step=0;R()", '', S.sending > 0) + btn(S.sending ? '<span class="spin"></span>جاري الحفظ' : 'حفظ', 'send()', 'p', S.sending > 0)
+  };
+}
+function kv(d, nImg) {
+  return `<dl class="kv"><div><dt>الاسم</dt><dd>${E(d.name)}</dd></div><div><dt>الهاتف</dt><dd class="ltr" style="text-align:right">${E(d.phone || '—')}</dd></div><div><dt>العنوان</dt><dd>${E(d.address || '—')}</dd></div><div><dt>نوع الإساءة</dt><dd>${E(typeText(d))}</dd></div><div><dt>الرابط</dt><dd>${linkHtml(d.link)}</dd></div><div><dt>الصور</dt><dd>${nImg}</dd></div><div><dt>الملاحظات</dt><dd>${E(d.notes || '—')}</dd></div></dl>`;
 }
 function shrink(f) {
   return new Promise((ok, no) => {
@@ -133,23 +321,28 @@ async function upl(inp) {
   S.busy--; R();
 }
 async function send() {
-  if (API.startsWith('PUT_')) { S.err = 'لم يتم ربط الصفحة بالـ Sheet بعد (راجع ملف الشرح)'; return R(); }
   S.sending = 1; S.err = ''; R();
   try {
     const d = S.d, r = await call({ action: 'add', data: { name: d.name, phone: d.phone, address: d.address, type: typeText(d), link: d.link, notes: d.notes, images: d.images } });
     S.sending = 0;
     if (r.ok) return go('done');
-    S.err = 'لم يتم الحفظ: ' + (r.error || ''); R();
-  } catch (e) { S.sending = 0; S.err = 'تعذّر الاتصال، تأكد من الإنترنت وحاول مرة أخرى'; R(); }
+    S.err = 'لم يتم الحفظ. حاول مرة أخرى.'; R();
+  } catch (e) { S.sending = 0; S.err = 'تعذّر الاتصال. تأكد من الإنترنت ثم اضغط حفظ مرة ثانية.'; R(); }
 }
 function done() {
-  return `<h1>تم الحفظ ✅</h1><div class="card"><p class="ok">تم تسجيل البيانات بنجاح.</p><div class="row"><button class="btn p" onclick="newRec()">+ إضافة شخص آخر</button><button class="btn" onclick="go('home')">الرئيسية</button></div></div>`;
+  return {
+    main: `<div class="ok-wrap"><div class="okc">${I.chk}</div><h1>تم الحفظ</h1><p class="lead">سُجّلت البيانات بنجاح.</p></div>`,
+    bar: btn('الرئيسية', "go('home')") + btn('إضافة شخص آخر', 'newRec()', 'p', false, I.plus)
+  };
 }
 
-/* ===== المسؤول: بحث وطباعة ===== */
+/* ---------- المسؤول ---------- */
 function login() {
-  return `<h1>دخول المسؤول</h1><div class="card"><label>رمز الدخول</label><input id="pin" type="password" inputmode="numeric" onkeydown="if(event.key==='Enter')enter()">
-  <div class="err">${E(S.err)}</div><div class="row sp" style="margin-top:12px"><button class="btn" onclick="go('home')">رجوع</button><button class="btn p" onclick="enter()">دخول</button></div></div>`;
+  return {
+    main: `<button class="back" onclick="go('home')">${I.chev}رجوع</button><h1>دخول المسؤول</h1><p class="lead">اكتب الرمز لعرض السجلات والبحث والطباعة.</p>${alertBox()}
+      <div class="fld"><label for="pin">الرمز</label><input class="in ltr" id="pin" type="password" inputmode="numeric" autocomplete="off" onkeydown="if(event.key==='Enter')enter()"></div>`,
+    bar: btn(S.loading ? '<span class="spin"></span>جاري التحقق' : 'دخول', 'enter()', 'p', S.loading > 0)
+  };
 }
 async function load() {
   const r = await call({ action: 'list', pin: S.pin });
@@ -157,34 +350,45 @@ async function load() {
   S.rows = r.rows;
 }
 async function enter() {
-  S.pin = document.getElementById('pin').value;
-  S.err = 'جاري التحقق…'; R();
-  try { await load(); go('list'); }
-  catch (e) { S.err = e.message === 'pin' ? 'الرمز غير صحيح' : 'تعذّر الاتصال'; R(); }
+  const v = $('pin').value; if (!v) return;
+  S.pin = v; S.loading = 1; S.err = ''; R();
+  try { await load(); S.loading = 0; go('list'); }
+  catch (e) { S.loading = 0; S.pin = ''; S.err = e.message === 'pin' ? 'الرمز غير صحيح' : 'تعذّر الاتصال. حاول مرة أخرى.'; R(); }
 }
 const flt = () => { const q = S.q.trim().toLowerCase(); return S.rows.filter(p => !q || [p.name, p.phone, p.address, p.link, p.type, p.notes].join(' ').toLowerCase().includes(q)); };
-const cards = () => { const L = flt(); return L.length ? L.map(p => `<div class="card item" onclick="S.sel='${p.id}';go('detail')"><div class="row sp"><b>${E(p.name)}</b><span class="tag">${E(p.type)}</span></div><div class="mu">${E(p.phone)}${p.phone && p.address ? ' · ' : ''}${E(p.address)}</div>${p.images.length ? `<div class="mu">📷 ${p.images.length} صورة</div>` : ''}</div>`).join('') : `<div class="card mu">${S.rows.length ? 'لا توجد نتائج' : 'لا توجد سجلات بعد'}</div>`; };
-function list() {
-  return `<div class="row sp"><h1>السجلات (${S.rows.length})</h1><button class="btn" onclick="S.pin='';S.rows=[];go('home')">خروج</button></div>
-  <div class="card"><div class="row"><button class="btn p" onclick="printList()">طباعة الكل</button><button class="btn" onclick="refresh()">تحديث</button></div>
-  <input style="margin-top:10px" placeholder="بحث بالاسم أو الهاتف أو العنوان أو الرابط…" value="${E(S.q)}" oninput="S.q=this.value;document.getElementById('ls').innerHTML=cards()"></div><div id="ls">${cards()}</div>`;
+function rowsHtml() {
+  const L = flt();
+  if (!L.length) return `<div class="empty">${S.rows.length ? 'لا توجد نتائج للبحث' : 'لا توجد سجلات بعد'}</div>`;
+  return `<div class="cnt">${L.length} سجل</div><div class="rows">${L.map(p => `<button class="row" onclick="S.sel='${p.id}';go('detail')"><div class="av">${E(initial(p.name))}</div><div class="rb"><b>${E(p.name)}</b><span>${E(p.address || p.phone || p.date)}</span></div><div class="rm"><span class="badge ${tcls(p.type)}">${E(p.type.split(':')[0])}</span>${p.images.length ? `<span class="mut">${p.images.length} صورة</span>` : ''}</div></button>`).join('')}</div>`;
 }
-async function refresh() { try { await load(); R(); } catch (e) { S.err = 'تعذّر التحديث'; R(); } }
+function list() {
+  return {
+    main: `${alertBox()}<div class="sbar"><div class="sbox">${I.search}<input class="in" id="q" placeholder="ابحث بالاسم أو الهاتف أو الرابط" value="${E(S.q)}" oninput="S.q=this.value;$('ls').innerHTML=rowsHtml()"></div><button class="sq" onclick="refresh()" aria-label="تحديث">${I.ref}</button></div><div id="ls">${rowsHtml()}</div>`,
+    bar: btn('طباعة النتائج', 'printList()', 'p', !S.rows.length, I.print)
+  };
+}
+async function refresh() { try { await load(); S.err = ''; R(); } catch (e) { S.err = 'تعذّر التحديث'; R(); } }
 function detail() {
-  const p = S.rows.find(x => x.id === S.sel); if (!p) return list();
-  return `<div class="row sp"><h1>${E(p.name)}</h1><button class="btn" onclick="go('list')">رجوع</button></div><div class="card">${sum({ ...p, images: p.images })}
-  <div class="mu">التاريخ: ${E(p.date)}</div>
-  ${p.images.length ? `<div class="imgs">${p.images.map(id => `<div><img src="${thumb(id)}" onclick="S.big='${thumb(id)}';R()"></div>`).join('')}</div>` : ''}
-  <div class="row" style="margin-top:14px"><button class="btn p" onclick="printOne('${p.id}')">طباعة</button>
-  <button class="btn d" onclick="${S.del ? `delRec('${p.id}')` : 'S.del=1;R()'}">${S.del ? 'تأكيد الحذف' : 'حذف'}</button></div><div class="err">${E(S.err)}</div></div>`;
+  const p = S.rows.find(x => x.id === S.sel); if (!p) { S.view = 'list'; return list(); }
+  return {
+    main: `<button class="back" onclick="go('list')">${I.chev}كل السجلات</button>
+      <div class="dh"><div class="av">${E(initial(p.name))}</div><div><h1>${E(p.name)}</h1><span class="badge ${tcls(p.type)}">${E(p.type)}</span> <span class="mut">${E(p.date)}</span></div></div>
+      ${alertBox()}${kv(p, p.images.length)}
+      ${p.images.length ? `<div class="grid">${p.images.map((id, i) => `<div class="im"><img src="${thumb(id)}" alt="صورة ${i + 1}" onclick="S.lb={list:S.rows.find(x=>x.id==='${p.id}').images.map(thumb),i:${i}};R()"></div>`).join('')}</div>` : ''}`,
+    bar: S.del
+      ? btn('إلغاء', 'S.del=0;R()') + btn('تأكيد الحذف', `delRec('${p.id}')`, 'd p', S.loading > 0, I.trash)
+      : btn('حذف', 'S.del=1;R()', 'o', false, I.trash) + btn('طباعة', `printOne('${p.id}')`, 'p', false, I.print)
+  };
 }
 async function delRec(id) {
-  S.err = 'جاري الحذف…'; R();
-  try { const r = await call({ action: 'delete', pin: S.pin, id }); if (!r.ok) throw 0; await load(); go('list'); }
-  catch (e) { S.err = 'تعذّر الحذف'; S.del = 0; R(); }
+  S.loading = 1; S.err = ''; R();
+  try { const r = await call({ action: 'delete', pin: S.pin, id }); if (!r.ok) throw 0; await load(); S.loading = 0; go('list'); }
+  catch (e) { S.loading = 0; S.del = 0; S.err = 'تعذّر الحذف. حاول مرة أخرى.'; R(); }
 }
-const pr = p => `<div class="rec"><h2>${E(p.name)}</h2><div class="kv"><b>الهاتف</b><span>${E(p.phone || '—')}</span><b>العنوان</b><span>${E(p.address || '—')}</span><b>نوع الإساءة</b><span>${E(p.type)}</span><b>الرابط</b><span dir="ltr">${E(p.link || '—')}</span><b>ملاحظات</b><span>${E(p.notes || '—')}</span><b>التاريخ</b><span>${E(p.date)}</span></div>${p.images.length ? `<div class="pi">${p.images.map(id => `<img src="${thumb(id)}">`).join('')}</div>` : ''}</div>`;
-function doPrint(h) { document.getElementById('pa').innerHTML = h; setTimeout(() => print(), 600); }
+
+/* ---------- الطباعة ---------- */
+const pr = p => `<div class="rec"><h2>${E(p.name)}</h2><dl class="kv"><div><dt>الهاتف</dt><dd>${E(p.phone || '—')}</dd></div><div><dt>العنوان</dt><dd>${E(p.address || '—')}</dd></div><div><dt>نوع الإساءة</dt><dd>${E(p.type)}</dd></div><div><dt>الرابط</dt><dd dir="ltr">${E(p.link || '—')}</dd></div><div><dt>ملاحظات</dt><dd>${E(p.notes || '—')}</dd></div><div><dt>التاريخ</dt><dd>${E(p.date)}</dd></div></dl>${p.images.length ? `<div class="pi">${p.images.map(id => `<img src="${thumb(id)}">`).join('')}</div>` : ''}</div>`;
+function doPrint(h) { $('pa').innerHTML = h; setTimeout(() => print(), 700); }
 const printOne = id => doPrint(pr(S.rows.find(x => x.id === id)));
 const printList = () => doPrint(flt().map(pr).join(''));
 
