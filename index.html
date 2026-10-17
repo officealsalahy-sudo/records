@@ -142,6 +142,17 @@ textarea.in{min-height:120px;resize:vertical}
 .okc svg{width:42px;height:42px;stroke-width:2.6}
 @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 
+/* timeline */
+.tl{position:relative;padding-right:20px;border-right:2px solid var(--line);margin:8px 8px 8px 0}
+.it{position:relative;padding:0 0 26px}
+.it::before{content:"";position:absolute;right:-27px;top:7px;width:12px;height:12px;border-radius:50%;background:var(--brand);border:2px solid var(--paper)}
+.idt{font-weight:700;font-size:17px}
+.il{margin:6px 0;font-size:15px;word-break:break-all}.il a{color:var(--brand)}
+.inote{margin:6px 0;white-space:pre-wrap}
+.sbtn{min-height:44px;padding:0 14px;border-radius:10px;border:1.5px solid var(--line);background:var(--surf);cursor:pointer;font-size:14px;font-weight:600;color:var(--mut)}
+.sbtn.d{border-color:var(--danger);background:var(--danger);color:#fff}
+.irow{display:flex;gap:8px;margin-top:10px}
+.sec{font-weight:700;margin:22px 0 8px;display:flex;justify-content:space-between;align-items:center}
 /* lightbox */
 .lb{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center}
 .lb img{max-width:100%;max-height:82%;object-fit:contain}
@@ -164,6 +175,8 @@ textarea.in{min-height:120px;resize:vertical}
   .rec .kv dt{color:#333}
   .pi{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
   .pi img{max-height:230px;max-width:48%;border:1px solid #888}
+  .pinc{page-break-inside:avoid;border-top:1px solid #aaa;padding:8px 0;margin-top:8px}
+  .rec{page-break-inside:auto!important}
 }
 </style>
 </head>
@@ -185,8 +198,9 @@ const TYPES = [
   { v: 'إساءة لفظية', d: 'شتائم أو ألفاظ مسيئة' },
   { v: 'أمور أخرى', d: 'اكتب النوع بنفسك' }
 ];
-const STEPS = ['البيانات الأساسية', 'العنوان والصفحة', 'نوع الإساءة والملاحظات', 'الصور'];
-const S = { view: 'home', step: 0, d: null, bad: {}, err: '', busy: 0, sending: 0, pin: '', rows: [], sel: null, q: '', del: 0, lb: null, loading: 0 };
+const TT = { basic: 'البيانات الأساسية', addr: 'العنوان والصفحة', link: 'رابط الصفحة', type: 'نوع الإساءة والتاريخ', imgs: 'الصور' };
+const seq = () => S.addPid ? ['link', 'type', 'imgs'] : ['basic', 'addr', 'type', 'imgs'];
+const S = { view: 'home', step: 0, d: null, bad: {}, err: '', busy: 0, sending: 0, pin: '', rows: [], sel: null, q: '', delId: null, lb: null, loading: 0, addPid: null };
 
 const I = {
   lock: '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>',
@@ -204,11 +218,16 @@ const I = {
 
 const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const $ = id => document.getElementById(id);
-const blank = () => ({ name: '', phone: '', address: '', type: '', typeOther: '', link: '', images: [], notes: '' });
+const today = () => { const t = new Date(); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); };
+const blank = () => ({ name: '', phone: '', address: '', type: '', typeOther: '', link: '', images: [], notes: '', idate: today() });
 const typeText = d => d.type === 'أمور أخرى' && d.typeOther ? 'أمور أخرى: ' + d.typeOther : d.type;
-const tcls = t => t === 'تعليق' ? 't1' : t === 'إساءة لفظية' ? 't2' : 't3';
+const tcls = t => t === 'تعليق' ? 't1' : String(t).indexOf('إساءة لفظية') === 0 ? 't2' : 't3';
 const thumb = id => 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1000';
 const initial = n => (String(n || '?').trim()[0] || '?');
+const parts = s => String(s).split('-').map(Number);
+const fmtD = s => { if (!s) return '—'; const [y, m, d] = parts(s); return new Date(y, m - 1, d).toLocaleDateString('ar-IQ', { day: 'numeric', month: 'long', year: 'numeric' }); };
+const dnum = s => { const [y, m, d] = parts(s); return Date.UTC(y, m - 1, d) / 86400000; };
+const gap = (a, b) => { const n = Math.round(dnum(a) - dnum(b)); if (n <= 0) return 'في نفس اليوم'; if (n < 31) return 'بعد ' + n + ' يوماً'; if (n < 365) return 'بعد ' + Math.round(n / 30) + ' شهراً'; return 'بعد ' + (n / 365).toFixed(1).replace('.0', '') + ' سنة'; };
 const linkHtml = u => { if (!u) return '—'; try { const x = new URL(u); if (/^https?:$/.test(x.protocol)) return `<a href="${E(x.href)}" target="_blank" rel="noopener" dir="ltr">${E(u)}</a>`; } catch (e) {} return E(u); };
 
 async function call(o) {
@@ -235,81 +254,108 @@ function R() {
     document.body.appendChild(o);
   }
 }
-const go = v => { S.view = v; S.err = ''; S.del = 0; S.lb = null; R(); scrollTo(0, 0); };
+const go = v => { S.view = v; S.err = ''; S.delId = null; S.lb = null; R(); scrollTo(0, 0); };
 function lb(d) { if (d === 0) S.lb = null; else S.lb.i = (S.lb.i + d + S.lb.list.length) % S.lb.list.length; R(); }
+function openLb(id, i) { const it = S.rows.find(x => x.id === id); S.lb = { list: it.images.map(thumb), i }; R(); }
 function topAction() { if (S.pin) { S.pin = ''; S.rows = []; S.q = ''; go('home'); } else go('login'); }
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && S.lb) lb(0); });
 
 const btn = (txt, fn, cls = '', dis = false, ico = '') => `<button class="btn ${cls}" onclick="${fn}" ${dis ? 'disabled' : ''}>${ico}${txt}</button>`;
 const alertBox = () => S.err ? `<div class="alert" role="alert">${E(S.err)}</div>` : '';
-
 const VIEWS = { home, wizard, review, done, login, list, detail };
+
+/* ---------- تجميع الوقائع حسب الشخص ---------- */
+function groups() {
+  const m = new Map();
+  S.rows.forEach(r => { const k = r.pid || r.id; let g = m.get(k); if (!g) { g = { pid: k, items: [] }; m.set(k, g); } g.items.push(r); });
+  const a = [...m.values()];
+  a.forEach(g => {
+    g.items.sort((x, y) => (y.idate || '').localeCompare(x.idate || ''));
+    const f = k => (g.items.find(i => i[k]) || {})[k] || '';
+    g.name = g.items[0].name; g.phone = f('phone'); g.address = f('address'); g.last = g.items[0].idate;
+  });
+  return a.sort((x, y) => (y.last || '').localeCompare(x.last || ''));
+}
 
 /* ---------- الإدخال ---------- */
 function home() {
+  const st = seq();
   return {
     main: `<h1>توثيق إساءة جديدة</h1><p class="lead">سجّل بيانات الشخص على أربع خطوات قصيرة. تقدر ترجع للخطوة السابقة بأي وقت.</p>
-    <ol class="steps">${STEPS.map((s, i) => `<li><div class="n">${i + 1}</div><div><b>${s}</b></div></li>`).join('')}</ol>`,
+    <ol class="steps">${['basic', 'addr', 'type', 'imgs'].map((k, i) => `<li><div class="n">${i + 1}</div><div><b>${TT[k]}</b></div></li>`).join('')}</ol>`,
     bar: btn('بدء تسجيل جديد', 'newRec()', 'p', false, I.plus)
   };
 }
-function newRec() { S.d = blank(); S.step = 0; S.bad = {}; go('wizard'); }
+function newRec() { S.addPid = null; S.d = blank(); S.step = 0; S.bad = {}; go('wizard'); }
+function addInc(pid) {
+  const g = groups().find(x => x.pid === pid); if (!g) return;
+  S.addPid = pid; S.d = Object.assign(blank(), { name: g.name, phone: g.phone, address: g.address });
+  S.step = 0; S.bad = {}; go('wizard');
+}
+function cancel() { if (S.pin) { S.addPid ? go('detail') : go('list'); } else go('home'); }
 
 function field(k, label, o = {}) {
   const v = E(S.d[k]), bad = S.bad[k];
   const ctl = o.ta
     ? `<textarea class="in${bad ? ' bad' : ''}" id="f_${k}" oninput="S.d.${k}=this.value">${v}</textarea>`
-    : `<input class="in${o.ltr ? ' ltr' : ''}${bad ? ' bad' : ''}" id="f_${k}" type="${o.tp || 'text'}" ${o.im ? `inputmode="${o.im}"` : ''} placeholder="${E(o.ph || '')}" value="${v}" autocomplete="off" oninput="S.d.${k}=this.value;this.classList.remove('bad')">`;
+    : `<input class="in${o.ltr ? ' ltr' : ''}${bad ? ' bad' : ''}" id="f_${k}" type="${o.tp || 'text'}" ${o.im ? `inputmode="${o.im}"` : ''} ${o.max ? `max="${o.max}"` : ''} placeholder="${E(o.ph || '')}" value="${v}" autocomplete="off" oninput="S.d.${k}=this.value;this.classList.remove('bad')">`;
   return `<div class="fld"><label for="f_${k}">${label}${o.opt ? ' <small>(اختياري)</small>' : ''}</label>${ctl}${bad ? `<div class="help">${bad}</div>` : ''}</div>`;
 }
 function wizard() {
-  const d = S.d, n = STEPS.length; let b = '';
-  if (S.step === 0) b = field('name', 'الاسم') + field('phone', 'رقم الهاتف', { opt: 1, tp: 'tel', im: 'tel', ltr: 1, ph: '07xxxxxxxxx' });
-  if (S.step === 1) b = field('address', 'العنوان', { opt: 1 }) + field('link', 'رابط صفحة فيسبوك أو تيكتوك أو انستا', { opt: 1, tp: 'url', im: 'url', ltr: 1, ph: 'https://' });
-  if (S.step === 2) {
+  const d = S.d, st = seq(), key = st[S.step]; let b = '';
+  if (key === 'basic') b = field('name', 'الاسم') + field('phone', 'رقم الهاتف', { opt: 1, tp: 'tel', im: 'tel', ltr: 1, ph: '07xxxxxxxxx' });
+  if (key === 'addr') b = field('address', 'العنوان', { opt: 1 }) + field('link', 'رابط صفحة فيسبوك أو تيكتوك أو انستا', { opt: 1, tp: 'url', im: 'url', ltr: 1, ph: 'https://' });
+  if (key === 'link') b = field('link', 'رابط صفحة فيسبوك أو تيكتوك أو انستا', { opt: 1, tp: 'url', im: 'url', ltr: 1, ph: 'https://' });
+  if (key === 'type') {
     b = `<div class="fld"><label>نوع الإساءة</label></div><div class="opts" role="radiogroup">${TYPES.map(t => `<button type="button" role="radio" aria-checked="${d.type === t.v}" class="opt${d.type === t.v ? ' on' : ''}" onclick="pick('${t.v}')"><div class="dot">${I.chk}</div><div><b>${t.v}</b><span>${t.d}</span></div></button>`).join('')}</div>`
       + (S.bad.type ? `<div class="help" style="margin:-8px 0 14px">${S.bad.type}</div>` : '')
       + (d.type === 'أمور أخرى' ? field('typeOther', 'اكتب نوع الإساءة', { ph: 'مثال: تهديد' }) : '')
+      + field('idate', 'تاريخ الواقعة', { tp: 'date', ltr: 1, max: today() })
       + field('notes', 'ملاحظات', { opt: 1, ta: 1 });
   }
-  if (S.step === 3) {
+  if (key === 'imgs') {
     b = `<label class="drop"><input type="file" accept="image/*" multiple onchange="upl(this)">${I.cam}<b>اضغط لإضافة صور</b><span class="mut">من المعرض أو الكاميرا، حتى 10 صور</span></label>`
       + (d.images.length || S.busy ? `<div class="grid">${d.images.map((m, i) => `<div class="im"><img src="${m}" alt="صورة ${i + 1}" onclick="S.lb={list:S.d.images,i:${i}};R()"><button class="x" onclick="S.d.images.splice(${i},1);R()" aria-label="حذف الصورة">${I.x}</button></div>`).join('')}${S.busy ? '<div class="im" style="display:grid;place-items:center"><div class="spin"></div></div>' : ''}</div>` : '');
   }
   return {
-    main: `<div class="prog">${STEPS.map((_, i) => `<i class="${i <= S.step ? 'on' : ''}"></i>`).join('')}</div>
-      <div class="stepline"><b>${STEPS[S.step]}</b><span>${S.step + 1} من ${n}</span></div>${alertBox()}${b}`,
-    bar: btn(S.step ? 'السابق' : 'إلغاء', S.step ? 'back_()' : "go('home')") + btn('التالي', 'nx()', 'p', S.busy > 0)
+    main: `<div class="prog">${st.map((_, i) => `<i class="${i <= S.step ? 'on' : ''}"></i>`).join('')}</div>
+      <div class="stepline"><b>${TT[key]}</b><span>${S.step + 1} من ${st.length}</span></div>
+      ${S.addPid ? `<div class="note">واقعة جديدة للشخص: <b>${E(d.name)}</b></div>` : ''}${alertBox()}${b}`,
+    bar: btn(S.step ? 'السابق' : 'إلغاء', S.step ? 'back_()' : 'cancel()') + btn('التالي', 'nx()', 'p', S.busy > 0)
   };
 }
 function pick(v) { S.d.type = v; delete S.bad.type; R(); }
 function back_() { S.err = ''; S.step--; R(); scrollTo(0, 0); }
 function nx() {
-  const d = S.d; S.bad = {}; S.err = '';
-  if (S.step === 0 && !d.name.trim()) S.bad.name = 'اكتب اسم الشخص';
-  if (S.step === 2) { if (!d.type) S.bad.type = 'اختر نوع الإساءة'; else if (d.type === 'أمور أخرى' && !d.typeOther.trim()) S.bad.typeOther = 'اكتب نوع الإساءة'; }
+  const d = S.d, key = seq()[S.step]; S.bad = {}; S.err = '';
+  if (key === 'basic' && !d.name.trim()) S.bad.name = 'اكتب اسم الشخص';
+  if (key === 'type') {
+    if (!d.type) S.bad.type = 'اختر نوع الإساءة';
+    else if (d.type === 'أمور أخرى' && !d.typeOther.trim()) S.bad.typeOther = 'اكتب نوع الإساءة';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d.idate || '')) S.bad.idate = 'اختر تاريخ الواقعة';
+  }
   if (Object.keys(S.bad).length) { R(); return; }
-  if (S.step === STEPS.length - 1) { S.view = 'review'; } else S.step++;
+  if (S.step === seq().length - 1) S.view = 'review'; else S.step++;
   R(); scrollTo(0, 0);
+}
+function kv(d, nImg) {
+  return `<dl class="kv"><div><dt>الاسم</dt><dd>${E(d.name)}</dd></div><div><dt>الهاتف</dt><dd class="ltr" style="text-align:right">${E(d.phone || '—')}</dd></div><div><dt>العنوان</dt><dd>${E(d.address || '—')}</dd></div><div><dt>نوع الإساءة</dt><dd>${E(typeText(d))}</dd></div><div><dt>تاريخ الواقعة</dt><dd>${fmtD(d.idate)}</dd></div><div><dt>الرابط</dt><dd>${linkHtml(d.link)}</dd></div><div><dt>الصور</dt><dd>${nImg}</dd></div><div><dt>الملاحظات</dt><dd>${E(d.notes || '—')}</dd></div></dl>`;
 }
 function review() {
   const d = S.d;
   return {
-    main: `<h2>راجع البيانات</h2><p class="lead">تأكد من المعلومات قبل الحفظ.</p>${alertBox()}${kv(d, d.images.length)}
+    main: `<h2>${S.addPid ? 'مراجعة الواقعة الجديدة' : 'راجع البيانات'}</h2><p class="lead">تأكد من المعلومات قبل الحفظ.</p>${alertBox()}${kv(d, d.images.length)}
       ${d.images.length ? `<div class="grid">${d.images.map((m, i) => `<div class="im"><img src="${m}" alt="" onclick="S.lb={list:S.d.images,i:${i}};R()"></div>`).join('')}</div>` : ''}`,
     bar: btn('تعديل', "S.view='wizard';S.step=0;R()", '', S.sending > 0) + btn(S.sending ? '<span class="spin"></span>جاري الحفظ' : 'حفظ', 'send()', 'p', S.sending > 0)
   };
-}
-function kv(d, nImg) {
-  return `<dl class="kv"><div><dt>الاسم</dt><dd>${E(d.name)}</dd></div><div><dt>الهاتف</dt><dd class="ltr" style="text-align:right">${E(d.phone || '—')}</dd></div><div><dt>العنوان</dt><dd>${E(d.address || '—')}</dd></div><div><dt>نوع الإساءة</dt><dd>${E(typeText(d))}</dd></div><div><dt>الرابط</dt><dd>${linkHtml(d.link)}</dd></div><div><dt>الصور</dt><dd>${nImg}</dd></div><div><dt>الملاحظات</dt><dd>${E(d.notes || '—')}</dd></div></dl>`;
 }
 function shrink(f) {
   return new Promise((ok, no) => {
     const r = new FileReader(); r.onerror = no;
     r.onload = () => { const im = new Image(); im.onerror = no; im.onload = () => {
-      const k = Math.min(1, 1000 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+      const k = Math.min(1, 900 / Math.max(im.width, im.height)), c = document.createElement('canvas');
       c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
-      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', .72)); };
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', .68)); };
       im.src = r.result; };
     r.readAsDataURL(f);
   });
@@ -323,9 +369,12 @@ async function upl(inp) {
 async function send() {
   S.sending = 1; S.err = ''; R();
   try {
-    const d = S.d, r = await call({ action: 'add', data: { name: d.name, phone: d.phone, address: d.address, type: typeText(d), link: d.link, notes: d.notes, images: d.images } });
+    const d = S.d, r = await call({ action: 'add', data: { name: d.name, phone: d.phone, address: d.address, type: typeText(d), link: d.link, notes: d.notes, images: d.images, idate: d.idate, pid: S.addPid || '' } });
     S.sending = 0;
-    if (r.ok) return go('done');
+    if (r.ok) {
+      if (S.pin && r.row) { S.rows.unshift(r.row); if (S.addPid) { S.sel = S.addPid; return go('detail'); } return go('list'); }
+      return go('done');
+    }
     S.err = 'لم يتم الحفظ. حاول مرة أخرى.'; R();
   } catch (e) { S.sending = 0; S.err = 'تعذّر الاتصال. تأكد من الإنترنت ثم اضغط حفظ مرة ثانية.'; R(); }
 }
@@ -355,42 +404,61 @@ async function enter() {
   try { await load(); S.loading = 0; go('list'); }
   catch (e) { S.loading = 0; S.pin = ''; S.err = e.message === 'pin' ? 'الرمز غير صحيح' : 'تعذّر الاتصال. حاول مرة أخرى.'; R(); }
 }
-const flt = () => { const q = S.q.trim().toLowerCase(); return S.rows.filter(p => !q || [p.name, p.phone, p.address, p.link, p.type, p.notes].join(' ').toLowerCase().includes(q)); };
+const hay = r => [r.name, r.phone, r.address, r.link, r.type, r.notes].join(' ').toLowerCase();
+const flt = () => { const q = S.q.trim().toLowerCase(); return groups().filter(g => !q || g.items.some(r => hay(r).includes(q))); };
 function rowsHtml() {
   const L = flt();
   if (!L.length) return `<div class="empty">${S.rows.length ? 'لا توجد نتائج للبحث' : 'لا توجد سجلات بعد'}</div>`;
-  return `<div class="cnt">${L.length} سجل</div><div class="rows">${L.map(p => `<button class="row" onclick="S.sel='${p.id}';go('detail')"><div class="av">${E(initial(p.name))}</div><div class="rb"><b>${E(p.name)}</b><span>${E(p.address || p.phone || p.date)}</span></div><div class="rm"><span class="badge ${tcls(p.type)}">${E(p.type.split(':')[0])}</span>${p.images.length ? `<span class="mut">${p.images.length} صورة</span>` : ''}</div></button>`).join('')}</div>`;
+  return `<div class="cnt">${L.length} شخص</div><div class="rows">${L.map(g => `<button class="row" onclick="S.sel='${g.pid}';go('detail')"><div class="av">${E(initial(g.name))}</div><div class="rb"><b>${E(g.name)}</b><span>آخر واقعة: ${fmtD(g.last)}</span></div><div class="rm">${g.items.length > 1 ? `<span class="badge t2">${g.items.length} وقائع</span>` : `<span class="badge ${tcls(g.items[0].type)}">${E(g.items[0].type.split(':')[0])}</span>`}${g.items.reduce((n, i) => n + i.images.length, 0) ? `<span class="mut">${g.items.reduce((n, i) => n + i.images.length, 0)} صورة</span>` : ''}</div></button>`).join('')}</div>`;
 }
 function list() {
   return {
     main: `${alertBox()}<div class="sbar"><div class="sbox">${I.search}<input class="in" id="q" placeholder="ابحث بالاسم أو الهاتف أو الرابط" value="${E(S.q)}" oninput="S.q=this.value;$('ls').innerHTML=rowsHtml()"></div><button class="sq" onclick="refresh()" aria-label="تحديث">${I.ref}</button></div><div id="ls">${rowsHtml()}</div>`,
-    bar: btn('طباعة النتائج', 'printList()', 'p', !S.rows.length, I.print)
+    bar: btn('طباعة', 'printList()', '', !S.rows.length, I.print) + btn('شخص جديد', 'newRec()', 'p', false, I.plus)
   };
 }
 async function refresh() { try { await load(); S.err = ''; R(); } catch (e) { S.err = 'تعذّر التحديث'; R(); } }
+
+function incHtml(it, i, items) {
+  const prev = items[i + 1];
+  return `<div class="it"><div class="idt">${fmtD(it.idate)}</div>
+    <div class="mut">${prev ? gap(it.idate, prev.idate) + ' من الواقعة السابقة' : 'أول واقعة مسجّلة'}</div>
+    <div style="margin:8px 0"><span class="badge ${tcls(it.type)}">${E(it.type)}</span></div>
+    ${it.link ? `<div class="il">${linkHtml(it.link)}</div>` : ''}
+    ${it.notes ? `<p class="inote">${E(it.notes)}</p>` : ''}
+    ${it.images.length ? `<div class="grid">${it.images.map((id, k) => `<div class="im"><img src="${thumb(id)}" alt="صورة ${k + 1}" loading="lazy" onclick="openLb('${it.id}',${k})"></div>`).join('')}</div>` : ''}
+    <div class="irow">${S.delId === it.id
+      ? `<button class="sbtn d" onclick="delRec('${it.id}')" ${S.loading ? 'disabled' : ''}>${S.loading ? 'جاري الحذف…' : 'تأكيد حذف الواقعة'}</button><button class="sbtn" onclick="S.delId=null;R()">إلغاء</button>`
+      : `<button class="sbtn" onclick="S.delId='${it.id}';R()">حذف الواقعة</button>`}</div></div>`;
+}
 function detail() {
-  const p = S.rows.find(x => x.id === S.sel); if (!p) { S.view = 'list'; return list(); }
+  const g = groups().find(x => x.pid === S.sel); if (!g) { S.view = 'list'; return list(); }
+  const nImg = g.items.reduce((n, i) => n + i.images.length, 0);
   return {
-    main: `<button class="back" onclick="go('list')">${I.chev}كل السجلات</button>
-      <div class="dh"><div class="av">${E(initial(p.name))}</div><div><h1>${E(p.name)}</h1><span class="badge ${tcls(p.type)}">${E(p.type)}</span> <span class="mut">${E(p.date)}</span></div></div>
-      ${alertBox()}${kv(p, p.images.length)}
-      ${p.images.length ? `<div class="grid">${p.images.map((id, i) => `<div class="im"><img src="${thumb(id)}" alt="صورة ${i + 1}" onclick="S.lb={list:S.rows.find(x=>x.id==='${p.id}').images.map(thumb),i:${i}};R()"></div>`).join('')}</div>` : ''}`,
-    bar: S.del
-      ? btn('إلغاء', 'S.del=0;R()') + btn('تأكيد الحذف', `delRec('${p.id}')`, 'd p', S.loading > 0, I.trash)
-      : btn('حذف', 'S.del=1;R()', 'o', false, I.trash) + btn('طباعة', `printOne('${p.id}')`, 'p', false, I.print)
+    main: `<button class="back" onclick="go('list')">${I.chev}كل الأشخاص</button>
+      <div class="dh"><div class="av">${E(initial(g.name))}</div><div><h1>${E(g.name)}</h1><span class="mut">${g.items.length} ${g.items.length > 2 ? 'وقائع' : g.items.length === 2 ? 'واقعتان' : 'واقعة'} · ${nImg} صورة</span></div></div>
+      ${alertBox()}
+      <dl class="kv"><div><dt>الهاتف</dt><dd class="ltr" style="text-align:right">${E(g.phone || '—')}</dd></div><div><dt>العنوان</dt><dd>${E(g.address || '—')}</dd></div></dl>
+      <div class="sec">سجل الوقائع</div><div class="tl">${g.items.map((it, i) => incHtml(it, i, g.items)).join('')}</div>`,
+    bar: btn('طباعة', `printOne('${g.pid}')`, '', false, I.print) + btn('واقعة جديدة', `addInc('${g.pid}')`, 'p', false, I.plus)
   };
 }
 async function delRec(id) {
   S.loading = 1; S.err = ''; R();
-  try { const r = await call({ action: 'delete', pin: S.pin, id }); if (!r.ok) throw 0; await load(); S.loading = 0; go('list'); }
-  catch (e) { S.loading = 0; S.del = 0; S.err = 'تعذّر الحذف. حاول مرة أخرى.'; R(); }
+  try {
+    const r = await call({ action: 'delete', pin: S.pin, id }); if (!r.ok) throw 0;
+    S.rows = S.rows.filter(x => x.id !== id); S.loading = 0; S.delId = null;
+    if (!groups().some(g => g.pid === S.sel)) return go('list');
+    R();
+  } catch (e) { S.loading = 0; S.delId = null; S.err = 'تعذّر الحذف. حاول مرة أخرى.'; R(); }
 }
 
 /* ---------- الطباعة ---------- */
-const pr = p => `<div class="rec"><h2>${E(p.name)}</h2><dl class="kv"><div><dt>الهاتف</dt><dd>${E(p.phone || '—')}</dd></div><div><dt>العنوان</dt><dd>${E(p.address || '—')}</dd></div><div><dt>نوع الإساءة</dt><dd>${E(p.type)}</dd></div><div><dt>الرابط</dt><dd dir="ltr">${E(p.link || '—')}</dd></div><div><dt>ملاحظات</dt><dd>${E(p.notes || '—')}</dd></div><div><dt>التاريخ</dt><dd>${E(p.date)}</dd></div></dl>${p.images.length ? `<div class="pi">${p.images.map(id => `<img src="${thumb(id)}">`).join('')}</div>` : ''}</div>`;
+const prG = g => `<div class="rec"><h2>${E(g.name)}</h2><dl class="kv"><div><dt>الهاتف</dt><dd>${E(g.phone || '—')}</dd></div><div><dt>العنوان</dt><dd>${E(g.address || '—')}</dd></div><div><dt>عدد الوقائع</dt><dd>${g.items.length}</dd></div></dl>`
+  + g.items.slice().reverse().map(p => `<div class="pinc"><b>${fmtD(p.idate)}</b> — ${E(p.type)}<br>${p.link ? `<span dir="ltr">${E(p.link)}</span><br>` : ''}${p.notes ? E(p.notes) + '<br>' : ''}${p.images.length ? `<div class="pi">${p.images.map(id => `<img src="${thumb(id)}">`).join('')}</div>` : ''}</div>`).join('') + '</div>';
 function doPrint(h) { $('pa').innerHTML = h; setTimeout(() => print(), 700); }
-const printOne = id => doPrint(pr(S.rows.find(x => x.id === id)));
-const printList = () => doPrint(flt().map(pr).join(''));
+const printOne = pid => doPrint(prG(groups().find(x => x.pid === pid)));
+const printList = () => doPrint(flt().map(prG).join(''));
 
 R();
 </script>
