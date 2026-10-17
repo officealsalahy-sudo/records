@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سجل توثيق الإساءات</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1b1f24;--mu:#6b7280;--bd:#e2e5ea;--pr:#1d5fd1;--prt:#fff;--dg:#c62828;--ok:#1b7f3b}
+@media(prefers-color-scheme:dark){:root{--bg:#14171c;--card:#1d2128;--tx:#eceff3;--mu:#98a1ae;--bd:#2c323b;--pr:#5b93f0;--prt:#0b1220;--dg:#ef6f6f;--ok:#5fcf86}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Tahoma,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding:14px}
+h1{font-size:20px;margin:6px 0 12px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.btn{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:10px 16px;border-radius:10px;cursor:pointer}
+.btn.p{background:var(--pr);color:var(--prt);border-color:var(--pr)}
+.btn.d{color:var(--dg);border-color:var(--dg)}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.row.sp{justify-content:space-between}
+input,textarea{width:100%;font:inherit;padding:12px;border:1px solid var(--bd);border-radius:10px;background:var(--bg);color:var(--tx)}
+textarea{min-height:110px;resize:vertical}
+label{display:block;margin:12px 0 4px;font-weight:600}
+.mu{color:var(--mu);font-size:14px}
+.bar{height:6px;background:var(--bd);border-radius:6px;overflow:hidden;margin:8px 0 14px}.bar i{display:block;height:100%;background:var(--pr)}
+.q{font-size:18px;font-weight:700;margin:0 0 4px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:10px 16px;border:1px solid var(--bd);border-radius:999px;cursor:pointer;background:var(--bg)}
+.chip.on{background:var(--pr);color:var(--prt);border-color:var(--pr)}
+.imgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:10px}
+.imgs div{position:relative}
+.imgs img{width:100%;height:96px;object-fit:cover;border-radius:10px;border:1px solid var(--bd);cursor:pointer}
+.imgs button{position:absolute;top:4px;left:4px;border:0;background:rgba(0,0,0,.65);color:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer}
+.tag{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:999px;padding:2px 10px;font-size:13px}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;margin:8px 0}.kv b{color:var(--mu);font-weight:600}
+.item{cursor:pointer}
+.big{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:9}.big img{max-width:96%;max-height:92%}
+.err{color:var(--dg);font-size:14px;min-height:20px}.ok{color:var(--ok)}
+#pa{display:none}
+@media print{.wrap,.big{display:none!important}#pa{display:block;color:#000;background:#fff}.rec{page-break-inside:avoid;border:1px solid #999;border-radius:8px;padding:10px;margin-bottom:14px}.rec h2{margin:0 0 6px;font-size:18px}.pi{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.pi img{max-height:220px;max-width:46%;border:1px solid #999}.kv b{color:#333}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="pa"></div>
+<script>
+// ضع هنا رابط تطبيق الويب من Google Apps Script
+const API = 'https://script.google.com/macros/s/AKfycbzzIVWyHITVEwYAQBqeApZQ8WgtEjebuxR87ldWJ9RIyvIj7YyWJh_Lv6WP23hdJnw-/exec';
+
+const TYPES = ['تعليق', 'إساءة لفظية', 'أمور أخرى'];
+const PAGES = [
+  { t: 'البيانات الأساسية', f: [{ k: 'name', l: 'الاسم', req: 1 }, { k: 'phone', l: 'رقم الهاتف (إن وجد)', tp: 'tel' }] },
+  { t: 'العنوان والصفحة', f: [{ k: 'address', l: 'العنوان (إن وجد)' }, { k: 'link', l: 'رابط صفحة فيسبوك / تيكتوك / انستا', tp: 'url', ph: 'https://' }] },
+  { t: 'نوع الإساءة والملاحظات', type: 1, f: [{ k: 'notes', l: 'الملاحظات (إن وجدت)', ta: 1 }] },
+  { t: 'إرفاق الصور (يمكن أكثر من صورة)', img: 1, f: [] }
+];
+const S = { view: 'home', step: 0, d: null, err: '', busy: 0, sending: 0, pin: '', rows: [], sel: null, q: '', del: 0, big: '' };
+
+const E = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const blank = () => ({ name: '', phone: '', address: '', type: '', typeOther: '', link: '', images: [], notes: '' });
+const typeText = d => d.type === 'أمور أخرى' && d.typeOther ? 'أمور أخرى: ' + d.typeOther : d.type;
+const thumb = id => 'https://drive.google.com/thumbnail?id=' + id + '&sz=w1000';
+const linkHtml = u => { if (!u) return '—'; try { const x = new URL(u); if (/^https?:$/.test(x.protocol)) return `<a href="${E(x.href)}" target="_blank" rel="noopener" dir="ltr">${E(u)}</a>`; } catch (e) {} return E(u); };
+
+async function call(o) {
+  const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(o) });
+  return r.json();
+}
+
+function R() {
+  const a = document.getElementById('app');
+  a.innerHTML = ({ home, wizard: wiz, done, login, list, detail })[S.view]();
+  document.querySelectorAll('.big').forEach(x => x.remove());
+  if (S.big) { const o = document.createElement('div'); o.className = 'big'; o.onclick = () => { S.big = ''; o.remove(); }; const i = document.createElement('img'); i.src = S.big; o.appendChild(i); document.body.appendChild(o); }
+}
+const go = v => { S.view = v; S.err = ''; S.del = 0; R(); scrollTo(0, 0); };
+
+/* ===== الواجهة العامة: إدخال ===== */
+function home() {
+  return `<h1>سجل توثيق الإساءات</h1><div class="card"><p>سجّل البيانات خطوة بعد خطوة.</p>
+  <button class="btn p" onclick="newRec()">+ إضافة شخص</button></div>
+  <div class="row"><button class="btn" onclick="go('login')">دخول المسؤول</button></div>`;
+}
+function newRec() { S.d = blank(); S.step = 0; go('wizard'); }
+
+function wiz() {
+  const n = PAGES.length, d = S.d;
+  if (S.step >= n) return `<h1>مراجعة وإرسال</h1><div class="card">${sum(d)}<div class="err">${E(S.err)}</div>
+    <div class="row sp"><button class="btn" onclick="S.step--;S.err='';R()" ${S.sending ? 'disabled' : ''}>السابق</button>
+    <button class="btn p" onclick="send()" ${S.sending ? 'disabled' : ''}>${S.sending ? 'جاري الإرسال…' : 'حفظ'}</button></div></div>`;
+  const p = PAGES[S.step]; let b = '';
+  p.f.forEach(f => {
+    b += `<label>${f.l}${f.req ? ' *' : ''}</label>` + (f.ta
+      ? `<textarea oninput="S.d.${f.k}=this.value">${E(d[f.k])}</textarea>`
+      : `<input type="${f.tp || 'text'}" placeholder="${E(f.ph || '')}" value="${E(d[f.k])}" oninput="S.d.${f.k}=this.value">`);
+  });
+  if (p.type) {
+    b = `<label>نوع الإساءة *</label><div class="chips">${TYPES.map(t => `<span class="chip${d.type === t ? ' on' : ''}" onclick="S.d.type='${t}';R()">${t}</span>`).join('')}</div>`
+      + (d.type === 'أمور أخرى' ? `<input style="margin-top:10px" placeholder="اكتب نوع الإساءة" value="${E(d.typeOther)}" oninput="S.d.typeOther=this.value">` : '') + b;
+  }
+  if (p.img) {
+    b = `<input type="file" accept="image/*" multiple onchange="upl(this)"><div class="imgs">${d.images.map((m, i) => `<div><img src="${m}" onclick="S.big=S.d.images[${i}];R()"><button onclick="S.d.images.splice(${i},1);R()">×</button></div>`).join('')}</div>${S.busy ? '<div class="mu">جاري تجهيز الصور…</div>' : ''}`;
+  }
+  return `<h1>سجل جديد</h1><div class="card"><div class="mu">الخطوة ${S.step + 1} من ${n}</div><div class="bar"><i style="width:${(S.step + 1) / n * 100}%"></i></div>
+  <p class="q">${p.t}</p>${b}<div class="err">${E(S.err)}</div>
+  <div class="row sp" style="margin-top:14px"><button class="btn" onclick="${S.step ? "S.step--;S.err='';R()" : "go('home')"}">${S.step ? 'السابق' : 'إلغاء'}</button><button class="btn p" onclick="nx()">التالي</button></div></div>`;
+}
+function sum(d) {
+  const n = d.images ? d.images.length : 0;
+  return `<div class="kv"><b>الاسم</b><span>${E(d.name)}</span><b>الهاتف</b><span>${E(d.phone || '—')}</span><b>العنوان</b><span>${E(d.address || '—')}</span><b>نوع الإساءة</b><span>${E(typeText(d))}</span><b>الرابط</b><span>${linkHtml(d.link)}</span><b>الصور</b><span>${n}</span><b>ملاحظات</b><span>${E(d.notes || '—')}</span></div>`;
+}
+function nx() {
+  const d = S.d;
+  if (S.step === 0 && !d.name.trim()) { S.err = 'الاسم مطلوب'; return R(); }
+  if (S.step === 2 && !d.type) { S.err = 'اختر نوع الإساءة'; return R(); }
+  if (S.busy) { S.err = 'انتظر انتهاء تجهيز الصور'; return R(); }
+  S.err = ''; S.step++; R(); scrollTo(0, 0);
+}
+function shrink(f) {
+  return new Promise((ok, no) => {
+    const r = new FileReader(); r.onerror = no;
+    r.onload = () => { const im = new Image(); im.onerror = no; im.onload = () => {
+      const k = Math.min(1, 1000 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); ok(c.toDataURL('image/jpeg', .72)); };
+      im.src = r.result; };
+    r.readAsDataURL(f);
+  });
+}
+async function upl(inp) {
+  const fs = [...inp.files]; inp.value = ''; if (!fs.length) return;
+  S.busy++; S.err = ''; R();
+  for (const f of fs) { try { if (S.d.images.length < 10) S.d.images.push(await shrink(f)); } catch (e) { S.err = 'تعذّر قراءة إحدى الصور'; } }
+  S.busy--; R();
+}
+async function send() {
+  if (API.startsWith('PUT_')) { S.err = 'لم يتم ربط الصفحة بالـ Sheet بعد (راجع ملف الشرح)'; return R(); }
+  S.sending = 1; S.err = ''; R();
+  try {
+    const d = S.d, r = await call({ action: 'add', data: { name: d.name, phone: d.phone, address: d.address, type: typeText(d), link: d.link, notes: d.notes, images: d.images } });
+    S.sending = 0;
+    if (r.ok) return go('done');
+    S.err = 'لم يتم الحفظ: ' + (r.error || ''); R();
+  } catch (e) { S.sending = 0; S.err = 'تعذّر الاتصال، تأكد من الإنترنت وحاول مرة أخرى'; R(); }
+}
+function done() {
+  return `<h1>تم الحفظ ✅</h1><div class="card"><p class="ok">تم تسجيل البيانات بنجاح.</p><div class="row"><button class="btn p" onclick="newRec()">+ إضافة شخص آخر</button><button class="btn" onclick="go('home')">الرئيسية</button></div></div>`;
+}
+
+/* ===== المسؤول: بحث وطباعة ===== */
+function login() {
+  return `<h1>دخول المسؤول</h1><div class="card"><label>رمز الدخول</label><input id="pin" type="password" inputmode="numeric" onkeydown="if(event.key==='Enter')enter()">
+  <div class="err">${E(S.err)}</div><div class="row sp" style="margin-top:12px"><button class="btn" onclick="go('home')">رجوع</button><button class="btn p" onclick="enter()">دخول</button></div></div>`;
+}
+async function load() {
+  const r = await call({ action: 'list', pin: S.pin });
+  if (!r.ok) throw new Error(r.error === 'pin' ? 'pin' : 'err');
+  S.rows = r.rows;
+}
+async function enter() {
+  S.pin = document.getElementById('pin').value;
+  S.err = 'جاري التحقق…'; R();
+  try { await load(); go('list'); }
+  catch (e) { S.err = e.message === 'pin' ? 'الرمز غير صحيح' : 'تعذّر الاتصال'; R(); }
+}
+const flt = () => { const q = S.q.trim().toLowerCase(); return S.rows.filter(p => !q || [p.name, p.phone, p.address, p.link, p.type, p.notes].join(' ').toLowerCase().includes(q)); };
+const cards = () => { const L = flt(); return L.length ? L.map(p => `<div class="card item" onclick="S.sel='${p.id}';go('detail')"><div class="row sp"><b>${E(p.name)}</b><span class="tag">${E(p.type)}</span></div><div class="mu">${E(p.phone)}${p.phone && p.address ? ' · ' : ''}${E(p.address)}</div>${p.images.length ? `<div class="mu">📷 ${p.images.length} صورة</div>` : ''}</div>`).join('') : `<div class="card mu">${S.rows.length ? 'لا توجد نتائج' : 'لا توجد سجلات بعد'}</div>`; };
+function list() {
+  return `<div class="row sp"><h1>السجلات (${S.rows.length})</h1><button class="btn" onclick="S.pin='';S.rows=[];go('home')">خروج</button></div>
+  <div class="card"><div class="row"><button class="btn p" onclick="printList()">طباعة الكل</button><button class="btn" onclick="refresh()">تحديث</button></div>
+  <input style="margin-top:10px" placeholder="بحث بالاسم أو الهاتف أو العنوان أو الرابط…" value="${E(S.q)}" oninput="S.q=this.value;document.getElementById('ls').innerHTML=cards()"></div><div id="ls">${cards()}</div>`;
+}
+async function refresh() { try { await load(); R(); } catch (e) { S.err = 'تعذّر التحديث'; R(); } }
+function detail() {
+  const p = S.rows.find(x => x.id === S.sel); if (!p) return list();
+  return `<div class="row sp"><h1>${E(p.name)}</h1><button class="btn" onclick="go('list')">رجوع</button></div><div class="card">${sum({ ...p, images: p.images })}
+  <div class="mu">التاريخ: ${E(p.date)}</div>
+  ${p.images.length ? `<div class="imgs">${p.images.map(id => `<div><img src="${thumb(id)}" onclick="S.big='${thumb(id)}';R()"></div>`).join('')}</div>` : ''}
+  <div class="row" style="margin-top:14px"><button class="btn p" onclick="printOne('${p.id}')">طباعة</button>
+  <button class="btn d" onclick="${S.del ? `delRec('${p.id}')` : 'S.del=1;R()'}">${S.del ? 'تأكيد الحذف' : 'حذف'}</button></div><div class="err">${E(S.err)}</div></div>`;
+}
+async function delRec(id) {
+  S.err = 'جاري الحذف…'; R();
+  try { const r = await call({ action: 'delete', pin: S.pin, id }); if (!r.ok) throw 0; await load(); go('list'); }
+  catch (e) { S.err = 'تعذّر الحذف'; S.del = 0; R(); }
+}
+const pr = p => `<div class="rec"><h2>${E(p.name)}</h2><div class="kv"><b>الهاتف</b><span>${E(p.phone || '—')}</span><b>العنوان</b><span>${E(p.address || '—')}</span><b>نوع الإساءة</b><span>${E(p.type)}</span><b>الرابط</b><span dir="ltr">${E(p.link || '—')}</span><b>ملاحظات</b><span>${E(p.notes || '—')}</span><b>التاريخ</b><span>${E(p.date)}</span></div>${p.images.length ? `<div class="pi">${p.images.map(id => `<img src="${thumb(id)}">`).join('')}</div>` : ''}</div>`;
+function doPrint(h) { document.getElementById('pa').innerHTML = h; setTimeout(() => print(), 600); }
+const printOne = id => doPrint(pr(S.rows.find(x => x.id === id)));
+const printList = () => doPrint(flt().map(pr).join(''));
+
+R();
+</script>
+</body>
+</html>
